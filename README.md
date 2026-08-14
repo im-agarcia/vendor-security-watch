@@ -13,7 +13,7 @@ Monitoreo automático y gratuito de advisories de seguridad (CVEs) e incidentes 
 ## Quick start
 
 1. **Usá este repo como template** (botón "Use this template" en GitHub) o cloná y quitá el historial.
-2. Copiá `config.example.py` a `config.py` y editalo con tus propios vendors — ver [docs/sources.md](docs/sources.md).
+2. Copiá `config.example.py` a `config.py` y editalo con tus propios vendors — ver [docs/sources.md](docs/sources.md). `config.example.py` ya trae **19 fuentes reales y verificadas** como ejemplo (AWS, GCP, GitHub, New Relic, Sentry, PostHog, Grafana, Metabase, Open WebUI, GrowthBook, Anthropic, Atlassian, Google Workspace, MongoDB Atlas, Notion, Twilio, 1Password) — borrá las que no uses y sumá las tuyas.
 3. Elegí tu sistema de mensajería y seguí los pasos — ver [docs/notifiers.md](docs/notifiers.md).
 4. Guardá la URL del webhook como secret `NOTIFIER_WEBHOOK_URL` en **Settings → Secrets and variables → Actions**.
 5. Corré el workflow manualmente una vez (**Actions → Vendor security watch → Run workflow**) para bootstrapear el estado inicial, sin recibir mensajes retroactivos.
