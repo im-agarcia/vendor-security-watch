@@ -1,0 +1,32 @@
+name: Monthly vendor list review
+
+on:
+  schedule:
+    - cron: "0 12 1 * *"  # dia 1 de cada mes
+  workflow_dispatch: {}
+
+permissions:
+  issues: write
+
+jobs:
+  open-review-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: 'Revision mensual: lista de vendors/tools monitoreados',
+              body: [
+                '¿Seguimos usando los mismos vendors/tools que estan en `SOURCES` (config.py)?',
+                '',
+                '- [ ] Confirmar que no sumamos herramientas nuevas que falten en la lista',
+                '- [ ] Confirmar que no dimos de baja alguna que siga ahi',
+                '- [ ] Revisar si los keywords de filtrado siguen reflejando nuestra superficie real',
+                '',
+                'Si hay cambios, actualizar config.py y cerrar este issue.',
+              ].join('\n'),
+              labels: ['security', 'recurring-review'],
+            });

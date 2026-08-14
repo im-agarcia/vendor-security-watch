@@ -1,0 +1,52 @@
+name: Vendor security watch
+
+on:
+  schedule:
+    - cron: "0 11,18 * * *"  # ajusta horario/frecuencia a gusto
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: vendor-security-watch
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Restore state from state branch
+        # Si main tiene una regla de "solo cambios via PR", un bot no puede
+        # commitear ahi. El estado mutable vive en una rama separada sin proteger.
+        run: |
+          git fetch origin state:state 2>/dev/null || true
+          if git rev-parse --verify state >/dev/null 2>&1; then
+            git show state:state/seen.json > state/seen.json
+          fi
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r scripts/requirements.txt
+
+      - name: Run check
+        env:
+          NOTIFIER_WEBHOOK_URL: ${{ secrets.NOTIFIER_WEBHOOK_URL }}
+          GH_API_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python scripts/watch.py
+
+      - name: Push updated state to state branch
+        # checkout -B siempre parte del HEAD actual de main (que va cambiando),
+        # asi que cada corrida arranca de una base distinta al 'state' remoto
+        # anterior -> force push, no importa la historia de esta rama, solo el contenido.
+        run: |
+          git config user.name "vendor-security-watch-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -B state
+          git add state/seen.json
+          git diff --cached --quiet || git commit -m "chore: update seen advisories state"
+          git push --force origin state
